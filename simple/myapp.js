@@ -9,7 +9,7 @@ function initApp() {
   // Install built-in polyfills to patch browser incompatibilities.
   shaka.polyfill.installAll();
 
-  shaka.log.setLevel(shaka.log.Level.DEBUG);
+  shaka.log.setLevel(shaka.log.Level.V2);
 
   // Check to see if the browser supports the basic APIs Shaka needs.
   if (shaka.Player.isBrowserSupported()) {
