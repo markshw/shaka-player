@@ -72,6 +72,7 @@ shaka.extern.StateChange;
  *   playTime: number,
  *   pauseTime: number,
  *   bufferingTime: number,
+ *   licenseTime: number,
  *
  *   switchHistory: !Array.<shaka.extern.TrackChoice>,
  *   stateHistory: !Array.<shaka.extern.StateChange>
@@ -109,6 +110,8 @@ shaka.extern.StateChange;
  *   The total time spent in a paused state in seconds.
  * @property {number} bufferingTime
  *   The total time spent in a buffering state in seconds.
+ * @property {number} licenseTime
+ *   The time spent on license requests during this session in seconds, or NaN.
  *
  * @property {!Array.<shaka.extern.TrackChoice>} switchHistory
  *   A history of the stream changes.
@@ -176,6 +179,7 @@ shaka.extern.BufferedInfo;
  *   width: ?number,
  *   height: ?number,
  *   frameRate: ?number,
+ *   pixelAspectRatio: ?string,
  *   mimeType: ?string,
  *   codecs: ?string,
  *   audioCodec: ?string,
@@ -225,6 +229,8 @@ shaka.extern.BufferedInfo;
  *   The video height provided in the manifest, if present.
  * @property {?number} frameRate
  *   The video framerate provided in the manifest, if present.
+ * @property {?string} pixelAspectRatio
+ *   The video pixel aspect ratio provided in the manifest, if present.
  * @property {?string} mimeType
  *   The MIME type of the content provided in the manifest.
  * @property {?string} codecs
@@ -281,6 +287,9 @@ shaka.extern.Track;
  *   minPixels: number,
  *   maxPixels: number,
  *
+ *   minFrameRate: number,
+ *   maxFrameRate: number,
+ *
  *   minBandwidth: number,
  *   maxBandwidth: number
  * }}
@@ -309,6 +318,11 @@ shaka.extern.Track;
  * @property {number} maxPixels
  *   The maximum number of total pixels in a video track (i.e.
  *   <code>width * height</code>).
+ *
+ * @property {number} minFrameRate
+ *   The minimum framerate of a variant track.
+ * @property {number} maxFrameRate
+ *   The maximum framerate of a variant track.
  *
  * @property {number} minBandwidth
  *   The minimum bandwidth of a variant track, in bit/sec.
@@ -533,7 +547,8 @@ shaka.extern.DrmConfiguration;
  *   ignoreMinBufferTime: boolean,
  *   autoCorrectDrift: boolean,
  *   initialSegmentLimit: number,
- *   ignoreSuggestedPresentationDelay: boolean
+ *   ignoreSuggestedPresentationDelay: boolean,
+ *   ignoreEmptyAdaptationSet: boolean
  * }}
  *
  * @property {shaka.extern.DashContentProtectionCallback} customScheme
@@ -576,6 +591,10 @@ shaka.extern.DrmConfiguration;
  * @property {boolean} ignoreSuggestedPresentationDelay
  *   If true will cause DASH parser to ignore
  *   <code>suggestedPresentationDelay</code> from manifest. Defaults to
+ *   <code>false</code> if not provided.
+ * @property {boolean} ignoreEmptyAdaptationSet
+ *   If true will cause DASH parser to ignore
+ *   empty <code>AdaptationSet</code> from manifest. Defaults to
  *   <code>false</code> if not provided.
  * @exportDoc
  */

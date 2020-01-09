@@ -20,7 +20,7 @@ describe('Player', () => {
   let compiledShaka;
 
   beforeAll(async () => {
-    video = shaka.util.Dom.createVideoElement();
+    video = shaka.test.UiUtils.createVideoElement();
     document.body.appendChild(video);
 
     compiledShaka = await Util.loadShaka(getClientArg('uncompiled'));
@@ -88,6 +88,7 @@ describe('Player', () => {
         playTime: jasmine.any(Number),
         pauseTime: jasmine.any(Number),
         bufferingTime: jasmine.any(Number),
+        licenseTime: jasmine.any(Number),
 
         // We should have loaded the first Period by now, so we should have a
         // history.
@@ -116,7 +117,7 @@ describe('Player', () => {
 
       // We are opting not to initialize the player with a video element so that
       // it is in the least loaded state possible.
-      player = new shaka.Player();
+      player = new compiledShaka.Player();
 
       const stats = player.getStats();
       expect(stats).toBeTruthy();
@@ -367,6 +368,23 @@ describe('Player', () => {
       expect(video.playbackRate).toBe(1);
     });
 
+    // Regression test for #2326.
+    //
+    // 1. Construct an instance with a video element.
+    // 2. Don't call or await attach().
+    // 3. Call load() with a MIME type, which triggers a check for native
+    //    playback support.
+    //
+    // Note that a real playback may use a HEAD request to fetch a MIME type,
+    // even if one is not specified in load().
+    it('immediately after construction with MIME type', async () => {
+      const testSchemeMimeType = 'application/x-test-manifest';
+      player = new compiledShaka.Player(video);
+      await player.load('test:sintel_compiled', 0, testSchemeMimeType);
+      video.play();
+      await waitUntilPlayheadReaches(eventManager, video, 1, 10);
+    });
+
     /**
      * Gets the language of the active Variant.
      * @return {string}
@@ -442,7 +460,7 @@ describe('Player', () => {
       // uncompiled version.  Then we will get assertions.
       eventManager.unlisten(player, 'error');
       await player.destroy();
-      player = new shaka.Player(video);
+      player = new shaka.Player(video);  // NOTE: MUST BE UNCOMPILED
       player.configure({abr: {enabled: false}});
       eventManager.listen(player, 'error', Util.spyFunc(onErrorSpy));
 
@@ -477,7 +495,7 @@ describe('Player', () => {
       // uncompiled version.  Then we will get assertions.
       eventManager.unlisten(player, 'error');
       await player.destroy();
-      player = new shaka.Player(video);
+      player = new shaka.Player(video);  // NOTE: MUST BE UNCOMPILED
       player.configure({abr: {enabled: false}});
       eventManager.listen(player, 'error', Util.spyFunc(onErrorSpy));
 

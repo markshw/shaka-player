@@ -536,7 +536,7 @@ describe('HlsParser', () => {
 
     expect(ref.startTime).toBe(0);
     // baseMediaDecodeTime (655360) / timescale (1000)
-    expect(ref.presentationTimeOffset).toBe(655.36);
+    expect(ref.timestampOffset).toBe(-655.36);
     expect(presentationTimeline.getSeekRangeStart()).toBe(0);
     expect(presentationTimeline.getSeekRangeEnd()).toBe(5);
   });
@@ -2030,13 +2030,16 @@ describe('HlsParser', () => {
           .setResponseValue('test:/main.mp4', segmentData);
 
       const expectedRef = ManifestParser.makeReference(
-          'test:/main.mp4' /* uri */,
-          0 /* position */,
-          0 /* startTime */,
-          5 /* endTime */,
-          '' /* baseUri */,
+          /* uri= */ 'test:/main.mp4',
+          /* position= */ 0,
+          /* startTime= */ 0,
+          /* endTime= */ 5,
+          /* baseUri= */ '',
           expectedStartByte,
           expectedEndByte);
+      // In VOD content, we set the timestampOffset to align the
+      // content to presentation time 0.
+      expectedRef.timestampOffset = -segmentDataStartTime;
 
       const manifest = await parser.start('test:/master', playerInterface);
       const video = manifest.periods[0].variants[0].video;
@@ -2049,12 +2052,6 @@ describe('HlsParser', () => {
           'test:/main.mp4',
           expectedStartByte,
           partialEndByte);
-
-      // In VOD content, we set the presentationTimeOffset to align the
-      // content to presentation time 0.
-      const position = video.segmentIndex.find(0);
-      const ref = video.segmentIndex.get(position);
-      expect(ref.presentationTimeOffset).toBe(segmentDataStartTime);
     });
 
     it('parses start time from ts segments', async () => {
@@ -2066,13 +2063,16 @@ describe('HlsParser', () => {
           .setResponseValue('test:/main.ts', tsSegmentData);
 
       const expectedRef = ManifestParser.makeReference(
-          'test:/main.ts' /* uri */,
-          0 /* position */,
-          0 /* startTime */,
-          5 /* endTime */,
-          '' /* baseUri */,
+          /* uri= */ 'test:/main.ts',
+          /* position= */ 0,
+          /* startTime= */ 0,
+          /* endTime= */ 5,
+          /* baseUri= */ '',
           expectedStartByte,
           expectedEndByte);
+      // In VOD content, we set the timestampOffset to align the
+      // content to presentation time 0.
+      expectedRef.timestampOffset = -segmentDataStartTime;
 
       const manifest = await parser.start('test:/master', playerInterface);
       const video = manifest.periods[0].variants[0].video;
@@ -2085,12 +2085,6 @@ describe('HlsParser', () => {
           'test:/main.ts',
           expectedStartByte,
           partialEndByte);
-
-      // In VOD content, we set the presentationTimeOffset to align the
-      // content to presentation time 0.
-      const position = video.segmentIndex.find(0);
-      const ref = video.segmentIndex.get(position);
-      expect(ref.presentationTimeOffset).toBe(segmentDataStartTime);
     });
 
     // We want to make sure that we can interrupt the parser while it is getting
@@ -2148,7 +2142,7 @@ describe('HlsParser', () => {
       const ref = video.segmentIndex.get(0);
       expect(video.segmentIndex.get(1)).toBe(null);  // No more references.
 
-      expect(ref.presentationTimeOffset).toBe(segmentDataStartTime);
+      expect(ref.timestampOffset).toBe(-segmentDataStartTime);
       // The duration should be set to the sum of the segment durations (5),
       // even though the endTime of the segment is larger.
       expect(ref.endTime - ref.startTime).toBe(5);
